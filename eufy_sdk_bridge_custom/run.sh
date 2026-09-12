@@ -15,6 +15,22 @@ export EUFY_SESSION="/data/.eufy-session.json"
 # Reachable through ingress + the hosted go2rtc ports (not just localhost).
 export BRIDGE_HOST="0.0.0.0"
 
+# Own device identity. The SDK derives openudid from the account email when none is
+# given, so every client on the account lands on the SAME identity — and the SDK's own
+# note says each login then displaces the other's session ("give each client its own
+# openudid"). Sharing it with the published add-on is the suspected reason camera
+# detection pushes (personDetected/motion) never reached this container while ring and
+# arming pushes did. Derive a distinct, stable one from a different prefix.
+export EUFY_OPENUDID="$(jq -r '.openudid // ""' "$OPTS")"
+[ -z "$EUFY_OPENUDID" ] && export EUFY_OPENUDID="$(printf 'eufy-sdk-bridge-custom:%s' "$EUFY_EMAIL" | md5sum | cut -c1-16)"
+
+# A session file is bound to the openudid it was created under; reusing it under a new
+# identity makes the gateway 401. Drop it once so the next login is clean.
+if [ -f "$EUFY_SESSION" ] && [ "$(jq -r '.openudid // ""' "$EUFY_SESSION")" != "$EUFY_OPENUDID" ]; then
+  echo "[run.sh] openudid changed — clearing stale session for one clean login"
+  rm -f "$EUFY_SESSION"
+fi
+
 # Optional tuning → bridge env. Defaults in config.yaml mirror the bridge's own, so these are a no-op
 # unless the user changes them. debug is a bool option; map it to the truthy string the bridge expects.
 export EUFY_POLL_MS="$(jq -r '.poll_ms // 600000' "$OPTS")"

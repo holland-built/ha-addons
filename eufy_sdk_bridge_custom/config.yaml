@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-configuration
 name: eufy-sdk bridge (custom-modes patch)
-version: "0.2.1"
+version: "0.2.1-push1"
 slug: eufy_sdk_bridge_custom
 description: Local build of the eufy-sdk bridge, patched to allow writing HomeBase custom1/custom2/custom3 arming modes.
 url: "https://github.com/mega-yfue/ha-eufy-sdk-addon/tree/main/eufy_sdk_bridge"
@@ -43,6 +43,9 @@ options:
   event_log: true
   debug: false
   debug_p2p: false
+  # Device identity this bridge logs in as. Blank = derived from the email with a
+  # bridge-specific prefix, so it never collides with another client on the account.
+  openudid: ""
 schema:
   email: str
   password: password
@@ -62,3 +65,5 @@ schema:
   debug: bool
   # Additionally route the raw per-frame P2P transport logs (very noisy). Off by default.
   debug_p2p: bool
+  # Override the derived device identity. Changing it forces one clean login (possible 2FA).
+  openudid: str?

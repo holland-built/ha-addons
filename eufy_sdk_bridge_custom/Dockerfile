@@ -32,6 +32,27 @@ RUN sed -i 's/^  disarmed: "disarmed"$/  disarmed: "disarmed",\n  custom1: "cust
     && grep -q 'custom3: "custom3"' "${SDK_BUNDLE}" \
     && echo "arming patch applied to ${SDK_BUNDLE}"
 
+# Second patch: give this container its OWN push identity and persist the FCM token.
+#
+# `createEufy()` passes neither `openudid` nor `pushStore`, so the SDK (a) derives the
+# device identity from the account email — identical for every client on the account,
+# which its own CONTENDED_SESSION_HINT warns against — and (b) falls back to
+# `MemoryFcmStore`, so the FCM token and seen-ids are thrown away on every boot and a
+# brand-new token is registered each start.
+#
+# Symptom this addresses: this container received `doorbellPress` and
+# `armingModeChanged` pushes but never `personDetected`/`motion`, while the published
+# add-on on the same account received them fine.
+#
+# The `grep -q` calls fail the build if either anchor stops matching.
+RUN sed -i \
+    -e 's#^import { EufyMega, FileSessionStore, ConsoleLogger } from "@mega-yfue/eufy-sdk";#import { EufyMega, FileSessionStore, FileFcmStore, ConsoleLogger } from "@mega-yfue/eufy-sdk";#' \
+    -e 's#^    store: new FileSessionStore(cfg.session),#    store: new FileSessionStore(cfg.session),\n    openudid: process.env.EUFY_OPENUDID || undefined,\n    pushStore: new FileFcmStore(cfg.session.replace(/[^/]*$/, ".eufy-fcm.json")),#' \
+    /app/src/client.mjs \
+    && grep -q 'EUFY_OPENUDID' /app/src/client.mjs \
+    && grep -q 'FileFcmStore(' /app/src/client.mjs \
+    && echo "push-identity patch applied to /app/src/client.mjs"
+
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
