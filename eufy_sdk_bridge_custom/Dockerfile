@@ -53,6 +53,13 @@ RUN sed -i \
     && grep -q 'FileFcmStore(' /app/src/client.mjs \
     && echo "push-identity patch applied to /app/src/client.mjs"
 
+# Third patch: repair the push channel so detections keep arriving (see patch-push.mjs header).
+# Every replacement must match exactly once or the script exits 1 and fails the build.
+COPY patch-push.mjs /tmp/patch-push.mjs
+RUN node /tmp/patch-push.mjs "${SDK_BUNDLE}" \
+    && grep -q 'push-fix' "${SDK_BUNDLE}" \
+    && rm /tmp/patch-push.mjs
+
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
