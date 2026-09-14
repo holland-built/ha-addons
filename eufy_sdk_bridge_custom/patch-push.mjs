@@ -110,63 +110,6 @@ replaceOnce(
     });`,
 );
 
-// 5. Only one push channel ever. 0.2.1-push2 still showed a second ESTABLISHED :5228 socket a few
-//    minutes after start (no superseded start logged), so enforce it at the client itself: before
-//    connecting, drop this client's previous socket and close every other live push client.
-replaceOnce(
-  "track live push clients",
-  `  static MAX_LOGIN_FAILURES = 3;
-`,
-  `  static MAX_LOGIN_FAILURES = 3;
-  static live = new Set();
-`,
-);
-
-replaceOnce(
-  "one push socket at a time",
-  `  connect() {
-    this.closing = false;
-    this.parser.reset();
-    this.loggedIn = false;
-    const socket = tls2.connect(PORT, HOST, { servername: HOST });`,
-  `  connect() {
-    this.closing = false;
-    this.parser.reset();
-    this.loggedIn = false;
-    if (this.socket) {
-      const old = this.socket;
-      this.socket = void 0;
-      old.removeAllListeners("close");
-      old.destroy();
-      console.error("[push-fix] dropped this client's previous push socket before reconnecting");
-    }
-    for (const other of _PushClient.live) {
-      if (other !== this) {
-        console.error("[push-fix] closed another push client so only one push channel stays open");
-        other.close();
-      }
-    }
-    _PushClient.live.add(this);
-    const socket = tls2.connect(PORT, HOST, { servername: HOST });`,
-);
-
-replaceOnce(
-  "log which socket logs in",
-  `      this.logger.debug("[push] TLS connected, sending login");`,
-  `      console.log(\`[push-fix] push socket connected (local port \${socket.localPort})\`);`,
-);
-
-replaceOnce(
-  "forget closed push clients",
-  `  close() {
-    this.closing = true;
-    this.stopHeartbeat();`,
-  `  close() {
-    this.closing = true;
-    _PushClient.live.delete(this);
-    this.stopHeartbeat();`,
-);
-
 // 6. Diagnostic (only with add-on option debug_p2p): log every non-media frame the HomeBase sends
 //    over the local connection, so a detection can be matched to what the station announces locally.
 replaceOnce(
