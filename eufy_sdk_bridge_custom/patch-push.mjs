@@ -167,5 +167,17 @@ replaceOnce(
     this.stopHeartbeat();`,
 );
 
+// 6. Diagnostic (only with add-on option debug_p2p): log every non-media frame the HomeBase sends
+//    over the local connection, so a detection can be matched to what the station announces locally.
+replaceOnce(
+  "log HomeBase frames when debug_p2p is on",
+  `    const text2 = readNullTerminatedString(data);
+`,
+  `    const text2 = readNullTerminatedString(data);
+    if (!isMedia && process.env.BRIDGE_DEBUG_P2P)
+      console.log(\`[p2p-frame] \${new Date().toISOString()} station=\${this.cfg.stationSn} ch=\${header.channel} cmd=\${header.commandId} \${commandName(header.commandId)} len=\${data.length} \${text2.slice(0, 200).replace(/\\s+/g, " ")}\`);
+`,
+);
+
 writeFileSync(file, src);
 console.log("[patch-push] all push fixes applied");
