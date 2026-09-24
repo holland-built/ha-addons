@@ -30,6 +30,12 @@ RUN node /tmp/patch-push.mjs "${SDK_BUNDLE}" \
     && grep -q 'push-fix' "${SDK_BUNDLE}" \
     && rm /tmp/patch-push.mjs
 
+# Upstream bug (bridge 0.3.0 boot.mjs): writeGo2rtcConfig returns serial strings, but the camera
+# channel-map diagnostic reads `.sn` from each, so the map never prints. Accept both shapes.
+RUN sed -i 's#const camSns = new Set(cams.map((c) => c.sn));#const camSns = new Set(cams.map((c) => c?.sn ?? c));#' /app/src/boot.mjs \
+    && grep -q 'c?.sn ?? c' /app/src/boot.mjs \
+    && echo "channel-map log fix applied"
+
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 

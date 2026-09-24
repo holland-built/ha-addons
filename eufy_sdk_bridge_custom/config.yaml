@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-configuration
 name: eufy-sdk bridge (custom-modes patch)
-version: "0.3.0-push6"
+version: "0.3.0-push7"
 slug: eufy_sdk_bridge_custom
 description: Local build of the eufy-sdk bridge, patched to allow writing HomeBase custom1/custom2/custom3 arming modes.
 url: "https://github.com/mega-yfue/ha-eufy-sdk-addon/tree/main/eufy_sdk_bridge"
