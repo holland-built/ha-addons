@@ -9,7 +9,7 @@
 # Kept: the push-channel repairs and the HomeBase frame diagnostic (patch-push.mjs), plus patch 7
 # there, which keeps the old channel behaviour for two same-model cameras on one HomeBase until we
 # have read their channel numbers from the boot log.
-ARG BUILD_FROM=ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0@sha256:7dcf0f8e5f9ad4ec0e784c81af1150fc3431bc30cbdc73e11bd01f2ccee899fb
+ARG BUILD_FROM=ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0
 FROM ${BUILD_FROM}
 
 # The bridge base is node:alpine (no s6/bashio). `jq` lets the run script read /data/options.json.

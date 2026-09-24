@@ -2,8 +2,10 @@
 #
 # Each arch builds FROM the matching bridge image. The bridge publishes a multi-arch tag, so the same
 # reference works for every arch; pinning it here keeps a rebuild reproducible.
+# Supervisor rejects an @sha256 digest here and silently falls back to its own base image, so pin by
+# tag. 0.3.0 was sha256:7dcf0f8e5f9ad4ec0e784c81af1150fc3431bc30cbdc73e11bd01f2ccee899fb on 2026-09-23.
 build_from:
-  aarch64: ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0@sha256:7dcf0f8e5f9ad4ec0e784c81af1150fc3431bc30cbdc73e11bd01f2ccee899fb
-  amd64: ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0@sha256:7dcf0f8e5f9ad4ec0e784c81af1150fc3431bc30cbdc73e11bd01f2ccee899fb
+  aarch64: ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0
+  amd64: ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0
 labels:
   org.opencontainers.image.source: "https://github.com/mega-yfue/ha-eufy-sdk-addon"
