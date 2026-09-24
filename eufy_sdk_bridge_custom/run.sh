@@ -23,6 +23,9 @@ export BRIDGE_HOST="0.0.0.0"
 # arming pushes did. Derive a distinct, stable one from a different prefix.
 export EUFY_OPENUDID="$(jq -r '.openudid // ""' "$OPTS")"
 [ -z "$EUFY_OPENUDID" ] && export EUFY_OPENUDID="$(printf 'eufy-sdk-bridge-custom:%s' "$EUFY_EMAIL" | md5sum | cut -c1-16)"
+# Bridge 0.3.0 reads the identity as BRIDGE_OPENUDID (0.2.0 + our old patch read EUFY_OPENUDID).
+# Same value, so the saved session and push token stay valid.
+export BRIDGE_OPENUDID="$EUFY_OPENUDID"
 
 # A session file is bound to the openudid it was created under; reusing it under a new
 # identity makes the gateway 401. Drop it once so the next login is clean.

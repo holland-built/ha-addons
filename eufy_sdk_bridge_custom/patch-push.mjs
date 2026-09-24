@@ -1,4 +1,4 @@
-// Push-channel repair for the eufy-sdk bundle (SDK 0.1.0 in ha-eufy-sdk-bridge 0.2.0).
+// Push-channel repair for the eufy-sdk bundle (SDK 0.2.0 in ha-eufy-sdk-bridge 0.3.0; first written for 0.1.0).
 //
 // Symptom: pushConnected=true, the phone app gets every detection, but person/motion/doorbell pushes
 // stop reaching the bridge. Evidence on this box (2026-09-14): two ESTABLISHED sockets to
@@ -120,6 +120,23 @@ replaceOnce(
     if (!isMedia && process.env.BRIDGE_DEBUG_P2P)
       console.log(\`[p2p-frame] \${new Date().toISOString()} station=\${this.cfg.stationSn} ch=\${header.channel} cmd=\${header.commandId} \${commandName(header.commandId)} len=\${data.length} \${text2.slice(0, 200).replace(/\\s+/g, " ")}\`);
 `,
+);
+
+// 7. Keep the pre-0.2.0 channel behaviour. SDK 0.2.0 (#226) refuses to address a camera whose HomeBase
+//    channel is missing or shared with another camera. Woody and Backyard are both T8425 on one HomeBase 3,
+//    the exact pair that rule targets, and nobody has seen their channel numbers yet. Refusing would take
+//    BOTH offline. This restores the old addressing (missing -> 0, shared -> the stated channel) until the
+//    bridge's boot "camera channel map" log shows the real values. Remove once that log is read.
+replaceOnce(
+  "keep old channel addressing for missing/shared channels",
+  `    else if (stated === void 0)
+      out.set(d.sn, { issue: "missing" });
+    else if ((claimants.get(station)?.get(stated) ?? 0) > 1)
+      out.set(d.sn, { issue: "shared", claimed: stated });`,
+  `    else if (stated === void 0)
+      out.set(d.sn, { channel: 0 });
+    else if ((claimants.get(station)?.get(stated) ?? 0) > 1)
+      out.set(d.sn, { channel: stated });`,
 );
 
 writeFileSync(file, src);
