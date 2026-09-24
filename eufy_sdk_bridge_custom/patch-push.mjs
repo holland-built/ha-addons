@@ -122,22 +122,5 @@ replaceOnce(
 `,
 );
 
-// 7. Keep the pre-0.2.0 channel behaviour. SDK 0.2.0 (#226) refuses to address a camera whose HomeBase
-//    channel is missing or shared with another camera. Woody and Backyard are both T8425 on one HomeBase 3,
-//    the exact pair that rule targets, and nobody has seen their channel numbers yet. Refusing would take
-//    BOTH offline. This restores the old addressing (missing -> 0, shared -> the stated channel) until the
-//    bridge's boot "camera channel map" log shows the real values. Remove once that log is read.
-replaceOnce(
-  "keep old channel addressing for missing/shared channels",
-  `    else if (stated === void 0)
-      out.set(d.sn, { issue: "missing" });
-    else if ((claimants.get(station)?.get(stated) ?? 0) > 1)
-      out.set(d.sn, { issue: "shared", claimed: stated });`,
-  `    else if (stated === void 0)
-      out.set(d.sn, { channel: 0 });
-    else if ((claimants.get(station)?.get(stated) ?? 0) > 1)
-      out.set(d.sn, { channel: stated });`,
-);
-
 writeFileSync(file, src);
 console.log("[patch-push] all push fixes applied");

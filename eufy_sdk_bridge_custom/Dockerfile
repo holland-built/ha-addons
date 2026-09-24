@@ -6,9 +6,9 @@
 # name the 0.3.0 bridge reads (BRIDGE_OPENUDID). The guards below fail the build if upstream ever
 # drops either, instead of shipping a bridge that silently lost them.
 #
-# Kept: the push-channel repairs and the HomeBase frame diagnostic (patch-push.mjs), plus patch 7
-# there, which keeps the old channel behaviour for two same-model cameras on one HomeBase until we
-# have read their channel numbers from the boot log.
+# Kept: the push-channel repairs and the HomeBase frame diagnostic (patch-push.mjs). SDK 0.2.0's
+# refuse-shared-channel rule is left on: the boot channel map (2026-09-23) shows every camera on its
+# own channel (Garage 0, Doorbell 3, Woody 4, Backyard 5).
 ARG BUILD_FROM=ghcr.io/mega-yfue/ha-eufy-sdk-bridge:0.3.0
 FROM ${BUILD_FROM}
 
